@@ -3,6 +3,7 @@ package fussball;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Point;
+import java.awt.event.KeyEvent;
 
 /**
  * A class to represent each person-stick.
@@ -15,6 +16,8 @@ public class Spindle {
     private Point intersectBottom;//The point where the bottom of the table meets the spindle
     private Player[] players;//The players on the stick
     private Color color;//The color that the players should be painted.
+    private boolean selected = false;//Whether the user has the spindle currently selected or not
+    private char control;//The control char for the spindle
     
     /**
      * Constructor
@@ -51,15 +54,17 @@ public class Spindle {
      * @param intersectTop The point where the top of the table intersects the spindle
      * @param intersectBottom The point where the bottom of the table intersects the spindle
      * @param color The color that the spindle and players should be colored.
+     * @param control The char to be used to control this spindle (if human).
      */
     public void initialize(int numberOfPlayers, Point top, Point bottom, 
-            Point intersectTop, Point intersectBottom, Color color) {
+            Point intersectTop, Point intersectBottom, Color color, char control) {
         this.top = top;
         this.bottom = bottom;
         this.intersectTop = intersectTop;
         this.intersectBottom = intersectBottom;
         this.players = new Player[numberOfPlayers];
         this.color = color;
+        this.control = control;
         
         double length = (double)(bottom.y - top.y);
         double denom = (double)(numberOfPlayers + 1.0);
@@ -73,6 +78,22 @@ public class Spindle {
         }
     }
     
+    /**
+     * If the passed in ASCII value matches the control char for this spindle,
+     * toggles whether or not the spindle is selected. Otherwise, does nothing.
+     * @param asciiVal The ASCII value to compare against the control char.
+     */
+    public void toggleSelect(int asciiVal) {
+        char c = (char)asciiVal;
+        if (Character.toUpperCase(this.control) == Character.toUpperCase(c))
+            this.selected = !this.selected;//Toggle
+    }
+    
+    
     public Point getBottom() { return this.bottom; }
+    public char getControl() { return this.control; }
     public Player[] getPlayers() { return this.players; }
+    public boolean isSelected() { return this.selected; }
+    
+    
 }

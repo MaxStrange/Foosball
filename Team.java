@@ -30,18 +30,22 @@ public class Team {
             
             
             int numPlayers;//The number of players on the spindle
+            char control;//The control char for the spindle if it is human
             int x;//The x value of the spindle
             int stickOut;//How far the spindle will stick out from the table
             if (i == 0) {
                 numPlayers = human ? 3 : 1;
+                control = human ? 'S': 'Z';
                 x = startingX;
                 stickOut = stickOutInterval;
             } else if (i == 1) {
                 numPlayers = 5;
+                control = human ? 'D' : 'Z';
                 x = startingX + widthInterval;
                 stickOut = 3 * stickOutInterval;
             } else {
                 numPlayers = human ? 1 : 3;
+                control = human ? 'F' : 'Z';
                 x = startingX + (2 * widthInterval);
                 stickOut = stickOutInterval;
             }
@@ -53,7 +57,7 @@ public class Team {
             
             
             this.spindles[i].initialize(numPlayers, top, bottom, 
-                    topTable, bottomTable, color);
+                    topTable, bottomTable, color, control);
         }
     }
     

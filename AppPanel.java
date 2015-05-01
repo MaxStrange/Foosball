@@ -1,8 +1,12 @@
 package fussball;
 
+import java.awt.BasicStroke;
+import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.geom.Line2D;
 import javax.swing.JPanel;
 
 /**
@@ -69,16 +73,21 @@ public class AppPanel extends JPanel {
             Spindle s = this.state.getHumanSpindles()[i];
             Point belowSpindle = new Point(s.getBottom().x, s.getBottom().y + offset);
             
-            String control;
-            if (i == 0)
-                control = "S";
-            else if (i == 1)
-                control = "D";
-            else
-                control = "F";
+            String control = "" + s.getControl();
             
-            g.setFont(new Font("TimesRoman", Font.PLAIN, 30)); 
+            int fontSize = 30;
+            g.setFont(new Font("TimesRoman", Font.PLAIN, fontSize)); 
             g.drawString(control, belowSpindle.x, belowSpindle.y);
+            
+            if (s.isSelected()) {
+                Color prev = g.getColor();
+                g.setColor(Color.ORANGE);
+                Graphics2D g2 = (Graphics2D) g;
+                g2.setStroke(new BasicStroke(10));
+                
+                g.drawOval(belowSpindle.x - fontSize, belowSpindle.y - fontSize, 2 * fontSize, 2 * fontSize);
+                g.setColor(prev);//set the color back to normal
+            }
         }
     }
     

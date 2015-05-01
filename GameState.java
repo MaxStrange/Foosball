@@ -48,6 +48,18 @@ public class GameState {
                 startingXComp, widthInterval, stickOut, Color.RED, false);
     }
     
+    /**
+     * Toggles the given spindle (if the key corresponds to one of the spindle's
+     * keys, otherwise, does nothing).
+     * @param keyCode The ASCII code for the key that was pressed.
+     */
+    public void toggleSpindleSelect(int keyCode) {
+        //Try each spindle to see if it toggles that spindle's selection
+        for (Spindle s : getHumanSpindles()) {
+            s.toggleSelect(keyCode);
+        }
+    }
+    
     
     public LeftRightWall getLeftWall() { return this.table.getLeftWall(); }
     public LeftRightWall getRightWall() { return this.table.getRightWall(); }

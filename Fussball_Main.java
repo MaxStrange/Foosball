@@ -19,7 +19,8 @@ public class Fussball_Main {
 	gui.setVisible(true);
 
         GameState state = new GameState();
-        gui.initialize(state);;
+        GameLogic logic = new GameLogic();
+        gui.initialize(state, logic);
         gui.start();
     }
 }
