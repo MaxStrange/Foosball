@@ -1,6 +1,7 @@
 package fussball;
 
 import java.awt.Color;
+import java.util.ArrayList;
 import javax.swing.JPanel;
 
 /**
@@ -49,6 +50,23 @@ public class GameState {
     }
     
     /**
+     * Moves all spindles currently selected by the user up or down.
+     * @param up If true, move up; otherwise move down.
+     */
+    public void moveSelectedSpindles(boolean up) {
+        this.human.moveSelectedSpindles(up);
+    }
+    
+    /**
+     * Rotates all spindles currently selected by the user to the left or right.
+     * @param left If true, rotates clockwise; otherwise, rotates counter
+     * clockwise.
+     */
+    public void rotateSelectedSpindles(boolean left) {
+        this.human.rotateSelectedSpindles(left);
+    }
+    
+    /**
      * Toggles the given spindle (if the key corresponds to one of the spindle's
      * keys, otherwise, does nothing).
      * @param keyCode The ASCII code for the key that was pressed.
@@ -68,6 +86,7 @@ public class GameState {
     public Goal getLeftGoal() { return this.table.getLeftGoal(); }
     public Goal getRightGoal() { return this.table.getRightGoal(); }
     public Ball getBall() { return this.ball; }
+    public Spindle[] getComputerSpindles() { return this.computer.getSpindles(); }
     public Spindle[] getHumanSpindles() { return this.human.getSpindles(); }
     public Spindle[] getAllSpindles() {
         Spindle[] all = new Spindle[this.human.getSpindles().length + this.computer.getSpindles().length];
@@ -78,6 +97,20 @@ public class GameState {
                 all[i] = this.computer.getSpindles()[i - this.human.getSpindles().length];
         }
         return all;
+    }
+    public Player[] getAllPlayers() {
+        ArrayList<Player> allPlayers = new ArrayList<>();
+        
+        for (Spindle s : getAllSpindles()) {
+            Player[] players = s.getPlayers();
+            
+            for (Player p : players) {
+                allPlayers.add(p);
+            }
+        }
+        
+        Player[] allPlayersAsArray = new Player[allPlayers.size()];
+        return allPlayers.toArray(allPlayersAsArray);
     }
     public int getHumanScore() { return this.humanScore; }
     public int getComputerScore() { return this.computerScore; }

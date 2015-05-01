@@ -31,7 +31,21 @@ public class GameLogic {
      * @param k The event in question.
      */
     public void handleKeyPressed(KeyEvent k) {
-        //Handle arrow keys (rotate the selected spindles)
+        //Handle arrow keys (rotate the selected spindles or move them up/down)
+        switch (k.getKeyCode()) {
+            case KeyEvent.VK_UP:
+                this.state.moveSelectedSpindles(true);
+                break;
+            case KeyEvent.VK_DOWN:
+                this.state.moveSelectedSpindles(false);
+                break;
+            case KeyEvent.VK_LEFT:
+                this.state.rotateSelectedSpindles(true);
+                break;
+            case KeyEvent.VK_RIGHT:
+                this.state.rotateSelectedSpindles(false);
+                break;
+        }
     }
     
     /**
@@ -42,5 +56,51 @@ public class GameLogic {
     public void handleKeyReleased(KeyEvent k) {
         //Handle letter keys (select or unselect the specified spindles)
         this.state.toggleSpindleSelect(k.getKeyCode());
+    }
+    
+    /**
+     * Update the game because of a timer event.
+     * @param numTicks the number of times the timer has ticked so far.
+     */
+    public void timerTick(int numTicks) {
+        handleAI(numTicks);
+        
+        handleCollisionsWithPlayers();
+        
+        //TODO: move the ball, check for score, reset the ball if so.
+        moveBall();
+    }
+    
+    
+    /**
+     * Handles the game's "AI" by invoking the AI class every 5 ticks.
+     * @param numTicks The number of ticks so far.
+     */
+    private void handleAI(int numTicks) {
+        if ((numTicks % 5) == 0)//Don't do the computer every moment - that's too fast
+            GameAI.doMoves(state);        
+    }
+    
+    /**
+     * Checks for and deals with possible collisions between players and the
+     * ball.
+     */
+    private void handleCollisionsWithPlayers() {
+        /*
+        Go through every spindle's players and check for collision with ball.
+        */
+        Player[] players = this.state.getAllPlayers();
+        
+        for (Player p : players) {
+            p.collide(this.state.getBall());
+        }
+    }
+    
+    /**
+     * Moves the ball according to its current velocity vector.
+     */
+    private void moveBall() {
+        Ball ball = this.state.getBall();
+        ball.move();
     }
 }

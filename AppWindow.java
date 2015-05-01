@@ -29,9 +29,9 @@ public class AppWindow extends JFrame implements KeyListener {
      */
     public void initialize(GameState state, GameLogic logic) {
         this.state = state;
-        this.panel.initialize(state);
         this.logic = logic;
         this.logic.initialize(state);
+        this.panel.initialize(state, logic);
     }
     
     
@@ -42,8 +42,8 @@ public class AppWindow extends JFrame implements KeyListener {
         //Begin responding to keyboard events
         addKeyListener(this);
         
-        //TODO:
-        //Begin repainting on a timer (animation - look at the ball example for how)
+        //Begin repainting on a timer
+        this.panel.startTimer();
     }
 
     @Override
@@ -53,10 +53,12 @@ public class AppWindow extends JFrame implements KeyListener {
     @Override
     public void keyPressed(KeyEvent ke) {
         this.logic.handleKeyPressed(ke);
+        this.panel.repaint();
     }
 
     @Override
     public void keyReleased(KeyEvent ke) {
         this.logic.handleKeyReleased(ke);
+        this.panel.repaint();
     }
 }

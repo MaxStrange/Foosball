@@ -61,5 +61,28 @@ public class Team {
         }
     }
     
+    /**
+     * Moves all the selected spindles on the team up or down.
+     * @param up If true, moves the spindles up, otherwise moves them down.
+     */
+    public void moveSelectedSpindles(boolean up) {
+        for (Spindle s : this.spindles) {
+            if (s.isSelected())
+                s.move(up);
+        }
+    }
+    
+    /**
+     * Moves all the selected spindles clockwise or counter clockwise.
+     * @param clockwise If true, rotates the spindles clockwise. Otherwise,
+     * rotates counter clockwise.
+     */
+    public void rotateSelectedSpindles(boolean clockwise) {
+        for (Spindle s : this.spindles) {
+            if (s.isSelected())
+                s.rotate(clockwise);
+        }
+    }
+    
     public Spindle[] getSpindles() { return this.spindles; }
 }

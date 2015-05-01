@@ -6,15 +6,21 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
-import java.awt.geom.Line2D;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.time.Clock;
 import javax.swing.JPanel;
+import javax.swing.Timer;
 
 /**
  *The main Panel GUI.
  * @author Max Strange
  */
-public class AppPanel extends JPanel {
+public class AppPanel extends JPanel implements ActionListener {
     private GameState state;
+    private GameLogic logic = null;
+    private Timer timer;
+    private int numTicks = 0;//The number of ticks of the timer.
     
     /**
      * Constructor for AppPanel objects.
@@ -22,14 +28,36 @@ public class AppPanel extends JPanel {
     public AppPanel() {
     }
     
+    
+    @Override
+    public void actionPerformed(ActionEvent ae) {
+        this.numTicks++;
+        //Have the logic deal with collisions.
+        this.logic.timerTick(this.numTicks);
+        
+        repaint();
+    }
+    
     /**
      * Initializes the AppPanel.
      * @param state The state to be used for the game.
+     * @param logic The logic to be used to control the state of the game.
      */
-    public void initialize(GameState state) {
+    public void initialize(GameState state, GameLogic logic) {
         this.state = state;
         this.state.initialize(this);
+        this.logic = logic;
+        this.timer = new Timer(50, this);
     }
+    
+    /**
+     * Starts the timer that will cause the whole application to run. Only do
+     * this once, and only after everything is initialized.
+     */
+    public void startTimer() {
+        this.timer.start();
+    }
+    
     
     
     @Override
@@ -42,6 +70,8 @@ public class AppPanel extends JPanel {
         drawControls(g);
         drawScores(g);
     }
+    
+    
     
     private void drawAllSpindles(Graphics g) {
         Spindle[] allSpindles = this.state.getAllSpindles();
@@ -58,7 +88,7 @@ public class AppPanel extends JPanel {
      */
     private void drawBall(Graphics g) {
         Ball b = this.state.getBall();
-        g.fillOval(b.getXLocation() - b.getRadius(), b.getYLocation() - b.getRadius(), 
+        g.fillOval(b.getLocation().x - b.getRadius(), b.getLocation().y - b.getRadius(), 
                 b.getRadius() * 2, b.getRadius() * 2);
     }
     
