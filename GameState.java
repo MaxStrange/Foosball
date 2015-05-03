@@ -114,4 +114,5 @@ public class GameState {
     }
     public int getHumanScore() { return this.humanScore; }
     public int getComputerScore() { return this.computerScore; }
+    public Table getTable() { return this.table; }
 }

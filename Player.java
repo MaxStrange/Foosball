@@ -10,73 +10,174 @@ import java.awt.Point;
 public class Player {
     private final int HEAD_RADIUS = 15;
     private final int LEG_LENGTH = 75;
+    private final double OFFSET_Y = 3.0;//The proportion the ball will skew to the up or down when kicked
+    private final double MOMENTUM_CHANGE = 5.0;//The change in momentum per arrow click
+    private final double MAX_MOMENTUM = 25.0;//The maximum momentum possible
     
     private Point location;//The location of the Player
     private Point previousLocation;//The location the player was one tick ago.
     private Orientation orientation;//The current orientation of the player.
-    private Orientation previousOrientation;//The orientation the Player was one tick ago.
+    private double momentum;//Negative means clockwise (curiously)
+    private int time = 0;//The number of decays since the last time the momentum was changed by the user/computer
 
     public Player(Point location) {
         this.location = location;
         this.orientation = Orientation.DOWN;
         this.previousLocation = location;
-        this.previousOrientation = Orientation.DOWN;
+        this.momentum = 0.0;
     }
+    
+    
+    
+    
+    
     
     /**
      * Handles the collisions between the Player's feet, head, and the ball.
      * @param ball The game ball.
      */
     public void collide(Ball ball) {
-        /*
-        If the collision is with the FEET, check the player's previous orientation
-        to see which way the ball should accelerate.
-        If the collision is with the player's body, check he player's previous
-        location to see which way the ball should accelerate.
-        */
-        collideWithFeet(ball);
-        collideWithBody(ball);
-    }
-    
-    /**
-     * Checks for a collision between the feet and the ball.
-     * @param ball The game's ball
-     */
-    private void collideWithFeet(Ball ball) {
-        if (overlapFeetAndBall(ball)) {
-            System.out.println("Collide!");
-            //Process the collision
-            switch (this.previousOrientation) {
-                case UP:
-                    if (this.orientation == Orientation.LEFT)//ball goes right
-                        ball.accelerateLeftRight(false);//kick right
-                    else//ball goes left
-                        ball.accelerateLeftRight(true);//kick left
-                    break;
-                case DOWN:
-                    if (this.orientation == Orientation.LEFT)//ball goes left
-                        ball.accelerateLeftRight(true);//kick left
-                    else//ball goes right
-                        ball.accelerateLeftRight(false);//kick right
-                    break;
-                case LEFT://It was left, now it must be down
-                    ball.accelerateLeftRight(false);//kick right
-                    break;
-                case RIGHT://It was right, now it must be down
-                    ball.accelerateLeftRight(true);//kick left
-                    break;
+        boolean collidedWithBody = false;
+        
+        if (overlapBodyAndBall(ball) && this.orientation != Orientation.UP) {
+            collideWithBody(ball);
+            collidedWithBody = true;
+            System.out.println("Collide with body!");
+        } 
+        
+        if (overlapFeetAndBall(ball) && this.orientation != Orientation.UP) {
+            if ((Math.abs(this.momentum) < 2.0) && !collidedWithBody) {
+                collideWithBody(ball);
+                System.out.println("Collide with body!");
+            } else {
+                ball.accelerateLeftRight(this.momentum);
+                maybeReflectY(ball);
+                System.out.println("Collide with legs!");
             }
         }
+        
+        //Make sure that the ball is not inside the player
+        //TODO
     }
     
     /**
-     * Checks for a collision between the body and the ball.
+     * Decays the player's momentum.
+     */
+    public void decayMomentum() {
+        this.time++;
+        this.momentum = this.momentum / Math.exp(this.time);
+    }    
+    
+    /**
+     * Draw the Player.
+     * @param g The Graphics object to draw with.
+     */
+    public void draw(Graphics g) {
+        //Draw head
+        if (this.orientation == Orientation.UP)
+            g.drawOval(this.location.x - HEAD_RADIUS, this.location.y - HEAD_RADIUS, HEAD_RADIUS * 2, HEAD_RADIUS * 2);
+        else
+            g.fillOval(this.location.x - HEAD_RADIUS, this.location.y - HEAD_RADIUS, HEAD_RADIUS * 2, HEAD_RADIUS * 2);
+        
+        //Draw legs
+        Point hipTop = new Point(this.location.x, this.location.y - HEAD_RADIUS);
+        Point hipBottom = new Point(this.location.x, this.location.y + HEAD_RADIUS);
+        
+        Point foot = getFootLocation();
+        
+        if (this.orientation == Orientation.UP) {
+            //Don't paint the foot
+        } else {
+            g.drawLine(foot.x, foot.y, hipTop.x, hipTop.y);
+            g.drawLine(foot.x, foot.y, hipBottom.x, hipBottom.y);   
+        }
+    }
+    
+    /**
+     * Moves the player the given distance up or down.
+     * @param up If true, moves the player up. Otherwise moves the player down.
+     * @param distance The distance the player moves.
+     */
+    public void move(boolean up, int distance) {
+        if (up) {
+            this.location = new Point(this.location.x, this.location.y - distance);
+        } else {
+            this.location = new Point(this.location.x, this.location.y + distance);
+        }
+    }
+    
+    /**
+     * Rotates the player clockwise or counter clockwise (changing its
+     * orientation).
+     * @param clockwise If true, rotates clockwise. Otherwise, rotates counter
+     * clockwise.
+     */
+    public void rotate(boolean clockwise) {
+        switch (this.orientation) {
+            case UP:
+                this.orientation = clockwise ? Orientation.RIGHT : Orientation.LEFT;
+                break;
+            case DOWN:
+                this.orientation = clockwise ? Orientation.LEFT : Orientation.RIGHT;
+                break;
+            case LEFT:
+                this.orientation = clockwise ? Orientation.UP : Orientation.DOWN;
+                break;
+            case RIGHT:
+                this.orientation = clockwise ? Orientation.DOWN : Orientation.UP;
+                break;
+        }
+        increaseMomentum(clockwise);
+    }
+    
+    
+    
+    
+    
+    
+    /**
+     * Gets the player's foot's location. If the player's orientation is UP,
+     * this will return (-1, -1), so make sure to check the orientation of the
+     * player before using this value.
+     * @return The location of the player's foot, or (-1, -1) if the foot is
+     * in the air (orientation is UP).
+     */
+    public Point getFootLocation() {
+        return convertLocationToFootLocation(this.location, this.orientation);
+    }
+    /**
+     * Gets the player's location (the center of the player's head).
+     * @return A Point representing the player's head's location.
+     */
+    public Point getLocation() { return this.location; }
+    public Point getPreviousLocation() { return this.previousLocation; }
+    public Orientation getOrientation() { return this.orientation; }
+    
+    
+    
+    
+    /**
+     * Accelerates the ball due to the movement up or down of the spindle.
      * @param ball The game's ball
      */
-    private void collideWithBody(Ball ball) {
-        if (overlapBodyAndBall(ball)) {
-            //Process collision
-        }
+    private void accelerateBallDueToMovement(Ball ball) {
+        if (ball.getLocation().y > this.previousLocation.y)//ball is below player, accelerate it up
+            ball.accelerateUpDown(true);
+        else
+            ball.accelerateUpDown(false);
+    }    
+    
+    /**
+     * Maybe reflect the ball's y velocity, depending on the ball and player's
+     * relative position.
+     * @param ball The ball
+     */
+    private void maybeReflectY(Ball ball) {
+        Point body = getLocation();
+        Point ballLoc = ball.getLocation();
+        
+        //Adjust the y velocity proportionally to the difference between the y locations
+        ball.accelerateUpDown((ballLoc.y - getLocation().y) * OFFSET_Y);
     }
     
     /**
@@ -130,107 +231,30 @@ public class Player {
         
         boolean insideYRange;
         if (body.y > ballLoc.y) {//Ball is above the body
-            insideYRange = ((ballLoc.y + ball.getRadius()) >= foot.y);
+            insideYRange = ((ballLoc.y + ball.getRadius()) >= (foot.y - (HEAD_RADIUS / 2.0)));
         } else {//Ball below the body
-            insideYRange = ((ballLoc.y - ball.getRadius()) <= foot.y);
+            insideYRange = ((ballLoc.y - ball.getRadius()) <= (foot.y + (HEAD_RADIUS / 2.0)));
         }
         
         return insideXRange && insideYRange;
     }
-    
-    
-    
-    
-    
-    
+
     /**
-     * Draw the Player.
-     * @param g The Graphics object to draw with.
+     * Collide with body.
+     * @param ball the ball.
      */
-    public void draw(Graphics g) {
-        //Draw head
-        if (this.orientation == Orientation.UP)
-            g.drawOval(this.location.x - HEAD_RADIUS, this.location.y - HEAD_RADIUS, HEAD_RADIUS * 2, HEAD_RADIUS * 2);
-        else
-            g.fillOval(this.location.x - HEAD_RADIUS, this.location.y - HEAD_RADIUS, HEAD_RADIUS * 2, HEAD_RADIUS * 2);
-        
-        //Draw legs
-        Point hipTop = new Point(this.location.x, this.location.y - HEAD_RADIUS);
-        Point hipBottom = new Point(this.location.x, this.location.y + HEAD_RADIUS);
-        
-        Point foot = getFootLocation();
-        
-        if (this.orientation == Orientation.UP) {
-            //Don't paint the foot
-        } else {
-            g.drawLine(foot.x, foot.y, hipTop.x, hipTop.y);
-            g.drawLine(foot.x, foot.y, hipBottom.x, hipBottom.y);   
-        }
+    private void collideWithBody(Ball ball) {
+        //Reflect up/down left/right depending on relative position of centers
+        if (ball.getLocation().x > this.location.x)
+            ball.reflectLeftRight(false);//RIGHT
+        else if (ball.getLocation().x < this.location.x)
+            ball.reflectLeftRight(true);//LEFT
+
+        if (ball.getLocation().y > this.location.y)
+            ball.reflectUpDown(true);//UP
+        else if (ball.getLocation().y < this.location.y)
+            ball.reflectUpDown(false);//DOWN
     }
-    
-    /**
-     * Moves the player the given distance up or down.
-     * @param up If true, moves the player up. Otherwise moves the player down.
-     * @param distance The distance the player moves.
-     */
-    public void move(boolean up, int distance) {
-        if (up) {
-            this.location = new Point(this.location.x, this.location.y - distance);
-        } else {
-            this.location = new Point(this.location.x, this.location.y + distance);
-        }
-    }
-    
-    /**
-     * Rotates the player clockwise or counter clockwise (changing its
-     * orientation).
-     * @param clockwise If true, rotates clockwise. Otherwise, rotates counter
-     * clockwise.
-     */
-    public void rotate(boolean clockwise) {
-        switch (this.orientation) {
-            case UP:
-                this.orientation = clockwise ? Orientation.RIGHT : Orientation.LEFT;
-                this.previousOrientation = Orientation.UP;
-                break;
-            case DOWN:
-                this.orientation = clockwise ? Orientation.LEFT : Orientation.RIGHT;
-                this.previousOrientation = Orientation.DOWN;
-                break;
-            case LEFT:
-                this.orientation = clockwise ? Orientation.UP : Orientation.DOWN;
-                this.previousOrientation = Orientation.LEFT;
-                break;
-            case RIGHT:
-                this.orientation = clockwise ? Orientation.DOWN : Orientation.UP;
-                this.previousOrientation = Orientation.RIGHT;
-                break;
-        }
-    }
-    
-    /**
-     * Gets the player's foot's location. If the player's orientation is UP,
-     * this will return (-1, -1), so make sure to check the orientation of the
-     * player before using this value.
-     * @return The location of the player's foot, or (-1, -1) if the foot is
-     * in the air (orientation is UP).
-     */
-    public Point getFootLocation() {
-        return convertLocationToFootLocation(this.location, this.orientation);
-    }
-    public Point getPreviousFootLocation() {
-        return convertLocationToFootLocation(this.previousLocation, this.previousOrientation);
-    }
-    /**
-     * Gets the player's location (the center of the player's head).
-     * @return A Point representing the player's head's location.
-     */
-    public Point getLocation() { return this.location; }
-    public Point getPreviousLocation() { return this.previousLocation; }
-    public Orientation getOrientation() { return this.orientation; }
-    public Orientation getPreviousOrientation() { return this.previousOrientation; }
-    
-    
     
     /**
      * Gets the location of the foot of the player, given loc.
@@ -260,5 +284,38 @@ public class Player {
         
         Point foot = new Point(footX, loc.y);
         return foot;
+    }
+    
+    /**
+     * Changes the momentum to be more clockwise or more counter clockwise, 
+     * depending on the given argument.
+     * @param clockwise 
+     */
+    private void increaseMomentum(boolean clockwise) {
+        //Reset the time
+        this.time = 0;
+        
+        if (this.momentum < 0.0) {//Momentum is currently clockwise
+            
+            //change it to be more clockwise, or else change it to be barely counter clockwise
+            this.momentum = clockwise ? this.momentum - this.MOMENTUM_CHANGE : this.MOMENTUM_CHANGE;
+            
+            //Make sure the momentum doesn't go beyond the max
+            this.momentum = (this.momentum < ((-1.0) * this.MAX_MOMENTUM)) ? (-1.0) * this.MAX_MOMENTUM : this.momentum;
+            
+        } else if (this.momentum > 0.0) {//Momentum is currently counter clockwise
+            
+            //Change it to be more counter clockwise, or else change it to be barely clockwise
+            this.momentum = clockwise ? (-1.0) * this.MOMENTUM_CHANGE : this.momentum + this.MOMENTUM_CHANGE;
+            
+            //Make sure the momentum doesn't go beyond the max
+            this.momentum = (this.momentum > this.MAX_MOMENTUM) ? this.MAX_MOMENTUM : this.momentum;
+            
+        } else {//Momentum is currently 0.
+            
+            //Set it to small amount above or below 0.0
+            this.momentum = clockwise ? (-1.0) * this.MOMENTUM_CHANGE : this.MOMENTUM_CHANGE;
+            
+        }
     }
 }

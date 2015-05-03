@@ -45,6 +45,9 @@ public class GameLogic {
             case KeyEvent.VK_RIGHT:
                 this.state.rotateSelectedSpindles(false);
                 break;
+            case KeyEvent.VK_SPACE:
+                this.state.getBall().reset();
+                break;
         }
     }
     
@@ -67,10 +70,24 @@ public class GameLogic {
         
         handleCollisionsWithPlayers();
         
-        //TODO: move the ball, check for score, reset the ball if so.
         moveBall();
+        
+        decayMomentum(numTicks);
     }
     
+    /**
+     * Decays the momentum of each spindle.
+     * @param numTicks The number of ticks so far
+     */
+    private void decayMomentum(int numTicks) {
+        if ((numTicks % 10) == 0) {
+            Spindle[] spindles = this.state.getAllSpindles();
+            
+            for (Spindle s : spindles) {
+                s.decayMomentum();
+            }
+        }
+    }
     
     /**
      * Handles the game's "AI" by invoking the AI class every 5 ticks.
@@ -101,6 +118,6 @@ public class GameLogic {
      */
     private void moveBall() {
         Ball ball = this.state.getBall();
-        ball.move();
+        ball.move(this.state.getTable());
     }
 }

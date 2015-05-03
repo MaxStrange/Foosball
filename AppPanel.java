@@ -64,11 +64,13 @@ public class AppPanel extends JPanel implements ActionListener {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         
-        drawTableOutline(g);
-        drawBall(g);
-        drawAllSpindles(g);
-        drawControls(g);
-        drawScores(g);
+        if (this.logic != null) {
+            drawTableOutline(g);
+            drawBall(g);
+            drawAllSpindles(g);
+            drawControls(g);
+            drawScores(g);
+        }
     }
     
     

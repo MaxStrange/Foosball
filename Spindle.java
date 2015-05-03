@@ -27,6 +27,16 @@ public class Spindle {
         
     }
     
+    
+    /**
+     * Goes through each player on the spindle and decays it's momentum.
+     */
+    public void decayMomentum() {
+        for (Player p : this.players) {
+            p.decayMomentum();
+        }
+    }
+    
     /**
      * Since spindles are complicated, they come with the ability to draw
      * themselves!
@@ -72,7 +82,7 @@ public class Spindle {
         int distance;//The distance between each player (and the top to the first player and the bottom to the last).
         distance = (int)((length / denom) + 0.5);
         
-        this.distancePerMove = (int)((length / 25.0) + 0.5);
+        this.distancePerMove = (int)((length / 40.0) + 0.5);
         
         for (int i = 0; i < numberOfPlayers; i++) {
             Point loc = new Point(top.x, top.y + (distance * (i + 1)));
