@@ -8,19 +8,22 @@ import java.util.Random;
  * @author Max Strange
  */
 public class Ball {
-    private final Point startingLocation;
-    private final int radius = 10;
-    private final double accXMag = 25;
-    private final double accYMag = 25;
+    private final int RADIUS = 10;//The ball's radius
+    private final double ACC_X_MAG = 25;//The magnitude of the ball's acceleration (when it accelerates) in the X
+    private final double ACC_Y_MAG = 25;//The magnitude of the ball's acceleration (when it accelerates) in the Y
     /**
      * The value to be multiplied against the velocity every tick to simulate
      * friction on the ball.
      */
     private final double FRIC_FRAC = 0.9;
-    
-    private int xLoc;
-    private int yLoc;
-    private Vector velocity;
+    private final int DELAY = 10;//The number of ticks to delay before resetting the ball after scoring
+    private final Point startingLocation;//The Location the ball goes back to every time it resets
+        
+    private int xLoc;//The current x location of the ball
+    private int yLoc;//The current y location of the ball
+    private Vector velocity;//The current velocity of the ball
+    private boolean offTable = false;//Whether the ball is currently off the table (waiting to be reset after a goal)
+    private int reappearTimer = 0;//The number of elapsed ticks since the ball disappeared after a goal.
     
     
     
@@ -38,14 +41,15 @@ public class Ball {
     }
     
     
+    
     /**
      * Accelerates the ball to the left or right.
      * @param left If true, accelerates the ball to the left. Otherwise, to the
      * right.
      */
     public void accelerateLeftRight(boolean left) {
-        double velX = left ? this.velocity.getXComponent() - this.accXMag : 
-                this.velocity.getXComponent() + this.accXMag;
+        double velX = left ? this.velocity.getXComponent() - this.ACC_X_MAG : 
+                this.velocity.getXComponent() + this.ACC_X_MAG;
         this.velocity = new Vector(velX, this.velocity.getYComponent());
     }
     
@@ -57,7 +61,7 @@ public class Ball {
      * right.
      */
     public void accelerateLeftRight(double proportion) {
-        double velX = this.velocity.getXComponent() + ((proportion / 2.0) * this.accXMag);
+        double velX = this.velocity.getXComponent() + ((proportion / 2.0) * this.ACC_X_MAG);
         this.velocity = new Vector(velX, this.velocity.getYComponent());
     }
     
@@ -66,8 +70,8 @@ public class Ball {
      * @param up If true, accelerates the ball up. Otherwise, down.
      */
     public void accelerateUpDown(boolean up) {
-        double velY = up ? this.velocity.getYComponent() - this.accYMag :
-                this.velocity.getYComponent() + this.accYMag;
+        double velY = up ? this.velocity.getYComponent() - this.ACC_Y_MAG :
+                this.velocity.getYComponent() + this.ACC_Y_MAG;
         this.velocity = new Vector(this.velocity.getXComponent(), velY);
     }
     
@@ -85,12 +89,26 @@ public class Ball {
     /**
      * Moves the ball. Checks for collision with walls and responds appropriately.
      * @param table The table the ball is on
+     * @return The player who scored (if anyone).
      */
-    public void move(Table table) {
+    public Score move(Table table) {
+        Score retr;
+        
+        //Check if the ball is off the table and maybe reset it (if it has been long enough off the table)
+        if (this.offTable) {
+            this.reappearTimer++;
+            if (this.reappearTimer > DELAY) // Reset the ball (it has been gone long enough), then move it
+                reset();
+            else    //If the ball is off the table, just leave it alone - don't move it, just return.
+                return Score.NOBODY;
+        }
+        
         adjustLocationBlind();
         adjustLocationBasedOnBoundaries(table);
-        bounceOffTableWalls(table);
+        retr = bounceOffTableWalls(table);
         applyFriction();
+        
+        return retr;
     }
     
     /**
@@ -120,14 +138,23 @@ public class Ball {
         resetVelocity();
         this.xLoc = (int)(this.startingLocation.getX() + 0.5);
         this.yLoc = (int)(this.startingLocation.getY() + 0.5);
+        
+        this.reappearTimer = 0;//reset the reappearTimer
+        this.offTable = false;//No longer off the table.
     }
     
+    
+    
     /**
-     * Gets the radius of the ball.
-     * @return the radius of the ball as a double.
+     * Gets the RADIUS of the ball.
+     * @return the RADIUS of the ball as a double.
      */
-    public int getRadius() { return this.radius; }
+    public int getRadius() { return this.RADIUS; }
     public Point getLocation() { return new Point(this.xLoc, this.yLoc); }
+    public boolean isOffTable() { return this.offTable; }
+    
+    
+    
     
     /**
      * Adjusts the location so that the ball does not leave the boundaries of 
@@ -140,16 +167,16 @@ public class Ball {
         LeftRightWall left = table.getLeftWall();
         LeftRightWall right = table.getRightWall();
         if (this.yLoc <= top.getY())
-            this.yLoc = top.getY() + this.radius;
+            this.yLoc = top.getY() + this.RADIUS;
         
         if (this.yLoc >= bottom.getY())
-            this.yLoc = bottom.getY() - this.radius;
+            this.yLoc = bottom.getY() - this.RADIUS;
         
         if (this.xLoc <= left.getX())
-            this.xLoc = left.getX() + this.radius;
+            this.xLoc = left.getX() + this.RADIUS;
         
         if (this.xLoc >= right.getX())
-            this.xLoc = right.getX() - this.radius;
+            this.xLoc = right.getX() - this.RADIUS;
     }
     
     /**
@@ -175,23 +202,54 @@ public class Ball {
     }
     
     /**
-     * Bounce off the table's walls.
+     * Bounce off the table's walls if it hits one. Checks if it is a score.
+     * If so, disappears the ball so that it can be reset at a later time.
      * @param table The table object used in the game.
+     * @return The player who scored (if anyone).
      */
-    private void bounceOffTableWalls(Table table) {
+    private Score bounceOffTableWalls(Table table) {
         TopBottomWall top = table.getTopWall();
         TopBottomWall bottom = table.getBottomWall();
         LeftRightWall left = table.getLeftWall();
         LeftRightWall right = table.getRightWall();
         
-        if ((this.yLoc - this.radius) <= top.getY())//Collision with top wall
+        if ((this.yLoc - this.RADIUS) <= top.getY()) {//Collision with top wall
             reflect(false);
-        else if ((this.yLoc + this.radius) >= bottom.getY())//Collision with bottom wall
+        } else if ((this.yLoc + this.RADIUS) >= bottom.getY()) {//Collision with bottom wall
             reflect(false);
-        else if ((this.xLoc - this.radius) <= left.getX())//Collision with left wall
+        } else if ((this.xLoc - this.RADIUS) <= left.getX()) {//Collision with left wall
             reflect(true);
-        else if ((this.xLoc + this.radius) >= right.getX())//Collision with right wall
+            
+            boolean belowTopOfGoal = ((this.yLoc - this.RADIUS) >= table.getLeftGoal().getTopLeftCornerY());
+            boolean aboveBottomOfGoal = ((this.yLoc + this.RADIUS) <= table.getLeftGoal().getBottomLeftCornerY());
+            
+            if (belowTopOfGoal && aboveBottomOfGoal) {
+                disappear();
+                return Score.HUMAN;//The human scored on the computer's goal
+            }
+            
+        } else if ((this.xLoc + this.RADIUS) >= right.getX()) {//Collision with right wall
             reflect(true);
+            
+            boolean belowTopOfGoal = ((this.yLoc - this.RADIUS) >= table.getRightGoal().getTopLeftCornerY());
+            boolean aboveBottomOfGoal = ((this.yLoc + this.RADIUS) <= table.getRightGoal().getBottomLeftCornerY());
+            
+            if (belowTopOfGoal && aboveBottomOfGoal) {
+                disappear();
+                return Score.COMPUTER;
+            }
+        }
+        
+        return Score.NOBODY;
+    }
+    
+    /**
+     * Disappears the ball and initializes a counter to keep track of how long
+     * it has been gone.
+     */
+    private void disappear() {
+        this.offTable = true;
+        this.reappearTimer = 0;
     }
     
     /**
@@ -206,7 +264,7 @@ public class Ball {
         else
             this.velocity = new Vector(this.velocity.getXComponent(), this.velocity.getYComponent() * (-1.0));
     }
-    
+        
     /**
      * Resets the velocity to a random one up to some upper limit.
      */

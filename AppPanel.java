@@ -90,8 +90,11 @@ public class AppPanel extends JPanel implements ActionListener {
      */
     private void drawBall(Graphics g) {
         Ball b = this.state.getBall();
-        g.fillOval(b.getLocation().x - b.getRadius(), b.getLocation().y - b.getRadius(), 
-                b.getRadius() * 2, b.getRadius() * 2);
+        
+        if (!b.isOffTable()) {//If the ball is NOT off the table, draw it.
+            g.fillOval(b.getLocation().x - b.getRadius(), b.getLocation().y - b.getRadius(), 
+                    b.getRadius() * 2, b.getRadius() * 2);
+        }//Otherwise, don't draw the ball
     }
     
     /**
@@ -136,8 +139,8 @@ public class AppPanel extends JPanel implements ActionListener {
         Point humanScoreLoc = new Point(this.state.getRightWall().getX() - (2 *xOffset),
                 this.state.getTopWall().getY() / 2);
         
-        g.drawString("Computer: " + this.state.getHumanScore(), compScoreLoc.x, compScoreLoc.y);
-        g.drawString("Human: " + this.state.getComputerScore(), humanScoreLoc.x, humanScoreLoc.y);
+        g.drawString("Computer: " + this.state.getComputerScore(), compScoreLoc.x, compScoreLoc.y);
+        g.drawString("Human: " + this.state.getHumanScore(), humanScoreLoc.x, humanScoreLoc.y);
     }
     
     /**
@@ -159,10 +162,30 @@ public class AppPanel extends JPanel implements ActionListener {
         Goal leftGoal = this.state.getLeftGoal();
         Goal rightGoal = this.state.getRightGoal();
         
+        
+        Color prev = g.getColor();//Save the color
+        
         //Draw the goals
-        g.drawRect(leftGoal.getTopLeftCornerX(), leftGoal.getTopLeftCornerY(),
+        if (leftGoal.isLitUp()) {
+            g.setColor(this.state.getHumanColor());
+            g.fillRect(leftGoal.getTopLeftCornerX(), leftGoal.getTopLeftCornerY(),
                 leftGoal.getWidth(), leftGoal.getHeight());
-        g.drawRect(rightGoal.getTopLeftCornerX(), rightGoal.getTopLeftCornerY(),
+        } else {
+            g.drawRect(leftGoal.getTopLeftCornerX(), leftGoal.getTopLeftCornerY(),
+                leftGoal.getWidth(), leftGoal.getHeight());
+        }
+        
+        g.setColor(prev);
+        
+        if (rightGoal.isLitUp()) {
+            g.setColor(this.state.getComputerColor());
+            g.fillRect(rightGoal.getTopLeftCornerX(), rightGoal.getTopLeftCornerY(),
                 rightGoal.getWidth(), rightGoal.getHeight());
+        } else {
+            g.drawRect(rightGoal.getTopLeftCornerX(), rightGoal.getTopLeftCornerY(),
+                rightGoal.getWidth(), rightGoal.getHeight());
+        }
+        
+        g.setColor(prev);//Set the color back to what it was to prevent surprises
     }
 }

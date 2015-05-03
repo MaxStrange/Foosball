@@ -67,11 +67,8 @@ public class GameLogic {
      */
     public void timerTick(int numTicks) {
         handleAI(numTicks);
-        
         handleCollisionsWithPlayers();
-        
         moveBall();
-        
         decayMomentum(numTicks);
     }
     
@@ -118,6 +115,8 @@ public class GameLogic {
      */
     private void moveBall() {
         Ball ball = this.state.getBall();
-        ball.move(this.state.getTable());
+        Score score = ball.move(this.state.getTable());
+        
+        this.state.score(score);
     }
 }

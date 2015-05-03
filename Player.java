@@ -42,22 +42,19 @@ public class Player {
         if (overlapBodyAndBall(ball) && this.orientation != Orientation.UP) {
             collideWithBody(ball);
             collidedWithBody = true;
-            System.out.println("Collide with body!");
+//            System.out.println("Collide with body!");
         } 
         
         if (overlapFeetAndBall(ball) && this.orientation != Orientation.UP) {
             if ((Math.abs(this.momentum) < 2.0) && !collidedWithBody) {
                 collideWithBody(ball);
-                System.out.println("Collide with body!");
+//                System.out.println("Collide with body!");
             } else {
                 ball.accelerateLeftRight(this.momentum);
                 maybeReflectY(ball);
-                System.out.println("Collide with legs!");
+//                System.out.println("Collide with legs!");
             }
         }
-        
-        //Make sure that the ball is not inside the player
-        //TODO
     }
     
     /**

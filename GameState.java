@@ -9,6 +9,9 @@ import javax.swing.JPanel;
  * @author Max Strange
  */
 public class GameState {
+    private final Color HUMAN_COLOR = Color.BLUE;
+    private final Color COMPUTER_COLOR = Color.RED;
+    
     private Table table;
     private Ball ball;
     private Team human;
@@ -44,9 +47,9 @@ public class GameState {
         int stickOut = getTopWall().getY() / 4;
         
         this.human = new Team(topIntersect, bottomIntersect, 
-                startingXHuman, widthInterval, stickOut, Color.BLUE, true);
+                startingXHuman, widthInterval, stickOut, HUMAN_COLOR, true);
         this.computer = new Team(topIntersect, bottomIntersect, 
-                startingXComp, widthInterval, stickOut, Color.RED, false);
+                startingXComp, widthInterval, stickOut, COMPUTER_COLOR, false);
     }
     
     /**
@@ -64,6 +67,24 @@ public class GameState {
      */
     public void rotateSelectedSpindles(boolean left) {
         this.human.rotateSelectedSpindles(left);
+    }
+    
+    /**
+     * Scores a point for the given player. Also lights up the goal to let
+     * the user know.
+     * @param player The player who scored (or nobody).
+     */
+    public void score(Score player) {
+        switch (player) {
+            case HUMAN:
+                this.humanScore++;
+                getLeftGoal().lightUp(true);
+                break;
+            case COMPUTER:
+                this.computerScore++;
+                getRightGoal().lightUp(true);
+                break;
+        }
     }
     
     /**
@@ -115,4 +136,6 @@ public class GameState {
     public int getHumanScore() { return this.humanScore; }
     public int getComputerScore() { return this.computerScore; }
     public Table getTable() { return this.table; }
+    public Color getHumanColor() { return this.HUMAN_COLOR; }
+    public Color getComputerColor() { return this.COMPUTER_COLOR; }
 }

@@ -147,18 +147,12 @@ public class Spindle {
     }
     
     
-    public Point getBottom() { return this.bottom; }
-    public char getControl() { return this.control; }
-    public Player[] getPlayers() { return this.players; }
-    public boolean isSelected() { return this.selected; }
-    
-    
     
     /**
      * Returns the player who is at the bottom of the spindle.
      * @return The bottom player from the spindle.
      */
-    private Player getBottomPlayer() {
+    public Player getBottomPlayer() {
         Player bottom = getPlayers()[0];
         for (Player p : getPlayers()) {
             if (p.getLocation().y > bottom.getLocation().y)
@@ -166,12 +160,11 @@ public class Spindle {
         }
         return bottom;
     }
-    
     /**
      * Returns the player who is at the top of the spindle.
      * @return the top player from the spindle
      */
-    private Player getTopPlayer() {
+    public Player getTopPlayer() {
         Player top = getPlayers()[0];
         for (Player p : getPlayers()) {
             if (p.getLocation().y < top.getLocation().y)
@@ -179,4 +172,9 @@ public class Spindle {
         }
         return top;
     }
+    public Point getBottom() { return this.bottom; }
+    public char getControl() { return this.control; }
+    public Player[] getPlayers() { return this.players; }
+    public boolean isSelected() { return this.selected; }
+    
 }
