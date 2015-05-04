@@ -65,11 +65,12 @@ public class GameLogic {
      * Update the game because of a timer event.
      * @param numTicks the number of times the timer has ticked so far.
      */
-    public void timerTick(int numTicks) {
-        handleAI(numTicks);
-        handleCollisionsWithPlayers();
-        moveBall();
-        decayMomentum(numTicks);
+    public void respondToTimerTick(int numTicks) {
+            handleAI(numTicks);//Have the AI do its thing
+            handleCollisionsWithPlayers();//Handle collisions between the ball and the players
+            moveBall();//Move the ball
+            decayMomentum(numTicks);//Decay the rotational momentum of the spindles
+            unlightGoals();//Unlight the goals if they have been lit for long enough
     }
     
     /**
@@ -118,5 +119,20 @@ public class GameLogic {
         Score score = ball.move(this.state.getTable());
         
         this.state.score(score);
+    }
+    
+    /**
+     * Increments each goal's amount of time it has been lit up for (if it is
+     * currently lit up) so that they will turn off eventually.
+     */
+    private void unlightGoals() {
+        Goal left = this.state.getLeftGoal();
+        Goal right = this.state.getRightGoal();
+        
+        if (left.isLitUp())
+            left.incrementLightUpEffect();
+        
+        if (right.isLitUp())
+            right.incrementLightUpEffect();
     }
 }

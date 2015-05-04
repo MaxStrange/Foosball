@@ -12,13 +12,14 @@ public class AppWindow extends JFrame implements KeyListener {
     private GameState state;
     private AppPanel panel;
     private GameLogic logic;
+    private boolean gameOver = false;
     
     /**
      * Constructor for the AppWindow.
      */
     public AppWindow() {
         this.state = state;
-        this.panel = new AppPanel();
+        this.panel = new AppPanel(this);
         add(this.panel);
     }
     
@@ -34,6 +35,27 @@ public class AppWindow extends JFrame implements KeyListener {
         this.panel.initialize(state, logic);
     }
     
+    /**
+     * Ends the game by killing the main window and dealing with high scores.
+     */
+    public void endGame() {
+        if (this.gameOver)
+            return;//Only end the game once!
+        
+        this.gameOver = true;
+        
+        ScoreViewer sv = new ScoreViewer(this.state.getElapsedTime());
+        
+        sv.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	sv.setSize(1000, 1000);
+        sv.setResizable(false);
+	
+        sv.go();
+        
+        sv.setVisible(true);
+        
+        this.dispose();
+    }
     
     /**
      * Starts the app.

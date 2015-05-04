@@ -46,6 +46,8 @@ public class Goal {
      */
     public void lightUp(boolean turnOn) {
         this.litUp = turnOn;
+        if (!turnOn)
+            this.litTime = 0;//Reset the litTime if we turn off the light.
     }
     
     

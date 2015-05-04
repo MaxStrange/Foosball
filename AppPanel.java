@@ -8,7 +8,6 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.time.Clock;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
@@ -17,25 +16,40 @@ import javax.swing.Timer;
  * @author Max Strange
  */
 public class AppPanel extends JPanel implements ActionListener {
-    private GameState state;
+    private GameState state = null;
     private GameLogic logic = null;
-    private Timer timer;
+    private Timer timer = null;
     private int numTicks = 0;//The number of ticks of the timer.
+    private final AppWindow parentWindow;
     
     /**
      * Constructor for AppPanel objects.
+     * @param parentWindow The parent AppWindow object responsible for this
+     * AppPanel object.
      */
-    public AppPanel() {
+    public AppPanel(AppWindow parentWindow) {
+        this.parentWindow = parentWindow;
     }
     
     
     @Override
     public void actionPerformed(ActionEvent ae) {
         this.numTicks++;
-        //Have the logic deal with collisions.
-        this.logic.timerTick(this.numTicks);
         
-        repaint();
+        
+        if (this.state.gameIsOver()) {//If the game is over, end the game!
+            
+            this.parentWindow.endGame();
+        
+        } else {//Otherwise, keep playing
+        
+            //Have the logic deal with everything
+            this.logic.respondToTimerTick(this.numTicks);
+
+            //Repaint according to what the logic has changed in the state
+            repaint();
+        
+        }
     }
     
     /**
@@ -70,6 +84,7 @@ public class AppPanel extends JPanel implements ActionListener {
             drawAllSpindles(g);
             drawControls(g);
             drawScores(g);
+            drawTime(g);
         }
     }
     
@@ -187,5 +202,18 @@ public class AppPanel extends JPanel implements ActionListener {
         }
         
         g.setColor(prev);//Set the color back to what it was to prevent surprises
+    }
+    
+    /**
+     * Draws the elapsed time since the game began.
+     * @param g The Graphics object used to draw the outline.
+     */
+    private void drawTime(Graphics g) {
+        g.setFont(new Font("TimesRoman", Font.PLAIN, 30));
+        
+        int xOffset = this.getWidth() / 2;
+        int yOffset = this.getHeight() / 10;
+        
+        g.drawString("Time: " + this.state.getElapsedTime(), xOffset, yOffset);
     }
 }

@@ -9,8 +9,9 @@ import javax.swing.JPanel;
  * @author Max Strange
  */
 public class GameState {
-    private final Color HUMAN_COLOR = Color.BLUE;
-    private final Color COMPUTER_COLOR = Color.RED;
+    private final Color HUMAN_COLOR = Color.BLUE;//The human player's color
+    private final Color COMPUTER_COLOR = Color.RED;//The computer player's color
+    private final int SCORE_TO_PLAY_TO = 6;//The score to play to
     
     private Table table;
     private Ball ball;
@@ -18,12 +19,25 @@ public class GameState {
     private Team computer;
     private int humanScore = 0;
     private int computerScore = 0;
+    private long startTime;
     
     /**
      * Constructor.
      */
     public GameState() {
     
+    }
+    
+    
+    /**
+     * Returns whether or not the game is over.
+     * @return Whether or not the game is over.
+     */
+    public boolean gameIsOver() {
+        boolean humanWins = getHumanScore() >= SCORE_TO_PLAY_TO;
+        boolean computerWins = getComputerScore() >= SCORE_TO_PLAY_TO;
+        
+        return humanWins || computerWins;
     }
     
     /**
@@ -50,6 +64,8 @@ public class GameState {
                 startingXHuman, widthInterval, stickOut, HUMAN_COLOR, true);
         this.computer = new Team(topIntersect, bottomIntersect, 
                 startingXComp, widthInterval, stickOut, COMPUTER_COLOR, false);
+        
+        this.startTime = System.nanoTime();
     }
     
     /**
@@ -99,7 +115,16 @@ public class GameState {
         }
     }
     
-    
+    /**
+     * Gets the winner (if someone has won - otherwise returns NOBODY).
+     * @return The winner, or NOBODY, in the case that nobody has won yet.
+     */
+    public Score getWinner() {
+        if (gameIsOver())
+            return (getHumanScore() > getComputerScore()) ? Score.HUMAN : Score.COMPUTER;
+        else
+            return Score.NOBODY;
+    }
     public LeftRightWall getLeftWall() { return this.table.getLeftWall(); }
     public LeftRightWall getRightWall() { return this.table.getRightWall(); }
     public TopBottomWall getTopWall() { return this.table.getTopWall(); }
@@ -138,4 +163,14 @@ public class GameState {
     public Table getTable() { return this.table; }
     public Color getHumanColor() { return this.HUMAN_COLOR; }
     public Color getComputerColor() { return this.COMPUTER_COLOR; }
+    /**
+     * Returns the number of seconds elapsed since the start of the game.
+     * @return The number of seconds elapsed since the start of the game.
+     */
+    public double getElapsedTime() { 
+        long elapsedTime = System.nanoTime() - this.startTime;
+        double seconds = (double)elapsedTime / 1000000000.0;
+        
+        return seconds;
+    }
 }
