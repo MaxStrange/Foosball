@@ -19,7 +19,9 @@ public class Fussball_Main {
                 + "unselect the left, middle, and right spindles.\n The arrow "
                 + "keys move the selected spindle up/down and rotate clockwise/"
                 + "counter clockwise.\n The space bar resets the ball (in case"
-                + " it gets stuck).\n\nWould you like to invert the left/right"
+                + " it gets stuck).\nFirst to get to six points wins! If you"
+                + " do it fast enough, you can get a high score."
+                + "\n\nWould you like to invert the left/right"
                 + " arrows? They currently are set to: left = rotate clockwise.";
         int answer = JOptionPane.showConfirmDialog(null, directions, title, JOptionPane.YES_NO_OPTION);
         

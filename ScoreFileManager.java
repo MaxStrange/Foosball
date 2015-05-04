@@ -36,6 +36,13 @@ public class ScoreFileManager {
     public static void createNewHighScoreFile() throws IOException {
         File f = new File(SCORE_FILE_NAME);
         f.createNewFile();
+        
+        HighScore[] toWrite = new HighScore[NUMBER_OF_SCORES_TO_SAVE];
+        for (int i = 0; i < toWrite.length; i++) {
+            toWrite[i] = new HighScore(EXAMPLE_SCORES[i]);
+        }
+        
+        writeToFile(toWrite);
     }
     
     /**

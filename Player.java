@@ -39,21 +39,23 @@ public class Player {
     public void collide(Ball ball) {
         boolean collidedWithBody = false;
         
+        //If the ball overlaps the body and the feet aren't up, there is a collision of type body
         if (overlapBodyAndBall(ball) && this.orientation != Orientation.UP) {
             collideWithBody(ball);
             collidedWithBody = true;
-//            System.out.println("Collide with body!");
         } 
         
+        //If the ball overlaps the feet and the feet aren't up...
         if (overlapFeetAndBall(ball) && this.orientation != Orientation.UP) {
+            
+            //If the player's momentum is small enough, and a body collision has not already been calculated
             if ((Math.abs(this.momentum) < 2.0) && !collidedWithBody) {
                 collideWithBody(ball);
-//                System.out.println("Collide with body!");
-            } else {
-                ball.accelerateLeftRight(this.momentum);
-                maybeReflectY(ball);
-//                System.out.println("Collide with legs!");
+            } else {//Otherwise (the momentum is high enough), collide with the feet (kick the ball)
+                ball.accelerateLeftRight(this.momentum);//Kick left/right
+                maybeReflectY(ball);//Skew the ball's velocity up/down
             }
+            
         }
     }
     

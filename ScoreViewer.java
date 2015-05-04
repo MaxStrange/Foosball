@@ -78,6 +78,7 @@ public class ScoreViewer extends JFrame {
                 keepTrying = false;//Reinitialize as false so that we exit the loop if the file is successfully made after a failure.
                 try {//try remaking it
                     ScoreFileManager.createNewHighScoreFile();
+                    addAllScores(name);//Recursively try again to add all the scores
                 } catch (IOException e) {//In case something goes wrong, ask the user if they want to try again
                     keepTrying = askUserYesNo("Something went wrong when making "
                             + "the file. Would you like to try again?", "Try again?");
