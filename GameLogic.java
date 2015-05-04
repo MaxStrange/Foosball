@@ -10,9 +10,14 @@ import java.awt.event.KeyEvent;
  */
 public class GameLogic {
     private GameState state = null;//The state of the game
+    private final boolean invert;
     
-    public GameLogic() {
-        //Nothing to do here
+    /**
+     * Constructor for the GameLogic class.
+     * @param invert Whether or not to invert the left/right arrow keys.
+     */
+    public GameLogic(boolean invert) {
+        this.invert = invert;
     }
     
     /**
@@ -40,10 +45,16 @@ public class GameLogic {
                 this.state.moveSelectedSpindles(false);
                 break;
             case KeyEvent.VK_LEFT:
-                this.state.rotateSelectedSpindles(true);
+                if (this.invert)
+                    this.state.rotateSelectedSpindles(false);
+                else                
+                    this.state.rotateSelectedSpindles(true);
                 break;
             case KeyEvent.VK_RIGHT:
-                this.state.rotateSelectedSpindles(false);
+                if (this.invert)
+                    this.state.rotateSelectedSpindles(true);
+                else
+                    this.state.rotateSelectedSpindles(false);
                 break;
             case KeyEvent.VK_SPACE:
                 this.state.getBall().reset();
