@@ -15,7 +15,7 @@ public class Fussball_Main {
      */
     public static void main(String[] args) {
         String title = "Directions for play";
-        String directions = "How to play: The S D and F buttons select or "
+        String directions = "How to play: The S D and F buttons TOGGLE select or "
                 + "unselect the left, middle, and right spindles.\n The arrow "
                 + "keys move the selected spindle up/down and rotate clockwise/"
                 + "counter clockwise.\n The space bar resets the ball (in case"

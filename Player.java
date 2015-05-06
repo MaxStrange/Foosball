@@ -277,7 +277,7 @@ public class Player {
                 footX = loc.x + LEG_LENGTH;
                 break;
             default:
-                throw new IllegalStateException("Somehow the Orientation of the "
+                throw new IllegalStateException("Somehow the Orientation of a "
                         + "player is not possible.");
         }
         
